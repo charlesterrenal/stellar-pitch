@@ -1,4 +1,8 @@
+import { useState } from 'react'
 import { useFadeIn } from '../hooks/useFadeIn'
+import { Modal } from '../components/Modal'
+import { ecosystemDetails } from '../data/ecosystemDetails'
+import type { EcosystemEntity } from '../data/ecosystemDetails'
 
 type TagVariant = 'stellar' | 'gov' | 'vc' | undefined
 
@@ -69,22 +73,60 @@ const groups: EcoGroup[] = [
     ],
   },
   {
-    title: 'Events & Media',
+    title: 'Events, Awards & Competitions',
     tags: [
-      { label: 'Stellar Island Retreat', variant: 'stellar' },
-      { label: 'Safe Space Pitch', variant: 'stellar' },
-      { label: 'Stellar Spark Radio', variant: 'stellar' },
+      { label: 'Filipinnovation' },
       { label: 'PH Startup Week' },
+      { label: 'Slingshot' },
       { label: 'Geeks on a Beach' },
+      { label: 'IGNITE' },
       { label: 'Techstars Startup Weekend' },
+      { label: 'She Loves Tech' },
+      { label: 'KMC Startup Awards' },
       { label: 'e27' },
-      { label: 'BackScoop' },
+    ],
+  },
+  {
+    title: 'Startup Communities, Media & Resources',
+    tags: [
+      { label: 'StellarPH Community', variant: 'stellar' },
+      { label: 'StartupnewsPH' },
+      { label: 'Sinigang Valley' },
+      { label: 'Rappler' },
+      { label: 'Philippine Daily Inquirer' },
+      { label: 'Esquire Philippines' },
+      { label: 'GMA News' },
     ],
   },
 ]
 
 export function Ecosystem() {
   const ref = useFadeIn()
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedEntity, setSelectedEntity] = useState<EcosystemEntity | null>(null)
+
+  const handleCategoryClick = (title: string) => {
+    setSelectedCategory(selectedCategory === title ? null : title)
+  }
+
+  const handleTagClick = (label: string) => {
+    const details = ecosystemDetails[label]
+    if (details) {
+      setSelectedEntity(details)
+    } else {
+      // Fallback for tags without data
+      setSelectedEntity({
+        name: label,
+        location: 'Coming Soon',
+        category: 'TBD',
+        role: 'Details are being updated.',
+        whatTheyDo: 'More information will be added soon.',
+        focusArea: 'N/A',
+        programs: 'N/A',
+        lifecycleStage: 'N/A'
+      })
+    }
+  }
 
   return (
     <section className="section" id="ecosystem" ref={ref}>
@@ -92,24 +134,67 @@ export function Ecosystem() {
         <div className="eyebrow">Ecosystem Map</div>
         <h2 className="sec-title">The Philippine startup landscape</h2>
         <p className="sec-sub">
-          Key players shaping the PH startup ecosystem &mdash; with StellarPH at the center.
+          Key players shaping the PH startup ecosystem &mdash; click on a category to filter, or a company to view details.
         </p>
       </div>
 
       <div className="eco-grid fade-in">
-        {groups.map((g) => (
-          <div className="card" key={g.title}>
-            <div className="eco-card-title">{g.title}</div>
-            <div className="eco-tags">
-              {g.tags.map((t) => (
-                <span className={['tag', t.variant].filter(Boolean).join(' ')} key={t.label}>
-                  {t.label}
-                </span>
-              ))}
+        {groups.map((g) => {
+          const isFaded = selectedCategory && selectedCategory !== g.title
+          
+          return (
+            <div 
+              className={`card ${isFaded ? 'eco-faded' : ''}`} 
+              key={g.title} 
+            >
+              <div 
+                className="eco-card-title" 
+                onClick={() => handleCategoryClick(g.title)}
+                style={{ cursor: 'pointer', transition: 'color 0.2s ease' }}
+                title="Click to filter by this category"
+              >
+                {g.title} {selectedCategory === g.title ? '×' : ''}
+              </div>
+              <div className="eco-tags">
+                {g.tags.map((t) => (
+                  <span 
+                    className={['tag', t.variant, 'clickable'].filter(Boolean).join(' ')} 
+                    key={t.label}
+                    onClick={() => handleTagClick(t.label)}
+                  >
+                    {t.label}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
+
+      <Modal 
+        isOpen={!!selectedEntity} 
+        onClose={() => setSelectedEntity(null)} 
+      >
+        {selectedEntity && (
+          <div className="entity-details">
+            <div className="entity-header">
+              {selectedEntity.logo && (
+                <img src={selectedEntity.logo} alt={selectedEntity.name} className="entity-logo" />
+              )}
+              <div className="entity-title-group">
+                <h3 className="modal-title">{selectedEntity.name}</h3>
+                <span className="entity-location">{selectedEntity.location}</span>
+              </div>
+            </div>
+            <p><strong>Category:</strong> {selectedEntity.category}</p>
+            <p><strong>Role in ecosystem:</strong> {selectedEntity.role}</p>
+            <p><strong>What they do:</strong> {selectedEntity.whatTheyDo}</p>
+            <p><strong>Focus area:</strong> {selectedEntity.focusArea}</p>
+            <p><strong>Programs:</strong> {selectedEntity.programs}</p>
+            <p><strong>Lifecycle stage:</strong> {selectedEntity.lifecycleStage}</p>
+          </div>
+        )}
+      </Modal>
     </section>
   )
 }
