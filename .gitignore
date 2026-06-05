@@ -30,3 +30,8 @@ AI_CONTEXT.md
 # Private Onboarding Materials
 public/Private & Shared/
 ecosystem (sections 1-2).txt
+
+# Local Environment Variables
+.env
+.env.*
+

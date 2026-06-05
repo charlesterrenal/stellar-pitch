@@ -1,90 +1,68 @@
-import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
 import './index.css'
 import { ThemeToggle } from './components/ThemeToggle'
+import { GalaxyBackground } from './components/GalaxyBackground'
 import { Overview }    from './sections/Overview'
-import { Ecosystem }   from './sections/Ecosystem'
-import { Timeline }    from './sections/Timeline'
-import { Future }      from './sections/Future'
+import { Storyteller } from './sections/Storyteller'
+import { JoinUs }      from './sections/JoinUs'
 import { Content }     from './sections/Content'
 
 const NAV_ITEMS = [
-  { id: 'overview',  label: 'Overview'  },
-  { id: 'ecosystem', label: 'Ecosystem' },
-  { id: 'timeline',  label: 'Timeline'  },
-  { id: 'future',    label: 'Future'    },
-  { id: 'content',   label: 'Content'   },
+  { path: '/',  label: 'Home'  },
+  { path: '/landscape', label: 'The Landscape' },
+  { path: '/resources',   label: 'Founder Resources'   },
+  { path: '/join',    label: 'Join Us'    },
 ]
 
-export default function App() {
-  const [progress,      setProgress]      = useState(0)
-  const [activeSection, setActiveSection] = useState('overview')
-
-  useEffect(() => {
-    const onScroll = () => {
-      const scrolled = window.scrollY
-      const total    = document.documentElement.scrollHeight - window.innerHeight
-      setProgress(total > 0 ? (scrolled / total) * 100 : 0)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    const sections = NAV_ITEMS.map(({ id }) => document.getElementById(id)).filter(Boolean) as HTMLElement[]
-    const obs = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActiveSection(e.target.id) }),
-      { rootMargin: '-40% 0px -55% 0px', threshold: 0 }
-    )
-    sections.forEach((s) => obs.observe(s))
-    return () => obs.disconnect()
-  }, [])
-
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id)
-    if (!el) return
-    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 84, behavior: 'smooth' })
-  }
+function Footer() {
+  const location = useLocation();
+  if (location.pathname === '/landscape') return null;
 
   return (
-    <>
-      <div className="progress-bar" style={{ width: `${progress}%` }} aria-hidden="true" />
+    <footer className="footer">
+      <p>
+        StellarPH Intern Onboarding Deck &middot; June 2026 &middot;{' '}
+        <a href="https://stellarph.io" rel="noopener noreferrer">stellarph.io</a>
+      </p>
+    </footer>
+  );
+}
 
+export default function App() {
+  return (
+    <BrowserRouter>
+      <GalaxyBackground />
       <nav className="nav" aria-label="Presentation navigation">
-        <a className="nav-logo" href="#overview" onClick={(e) => { e.preventDefault(); scrollTo('overview') }}>
+        <Link className="nav-logo" to="/">
           <img src="/StellarPH-ColoredLogo.svg" alt="StellarPH" style={{ height: '34px', width: 'auto' }} />
-        </a>
+        </Link>
 
         <div className="nav-links">
-          {NAV_ITEMS.map(({ id, label }) => (
-            <a
-              key={id}
-              className={`nav-link${activeSection === id ? ' active' : ''}`}
-              href={`#${id}`}
-              onClick={(e) => { e.preventDefault(); scrollTo(id) }}
+          {NAV_ITEMS.map(({ path, label }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
             >
               <span className="dot" aria-hidden="true" />
               {label}
-            </a>
+            </NavLink>
           ))}
           <ThemeToggle />
-          <span className="nav-badge">Intern Deck</span>
+          <span className="nav-badge">Founder's Field Guide</span>
         </div>
       </nav>
 
       <main>
-        <Overview />
-        <Ecosystem />
-        <Timeline />
-        <Future />
-        <Content />
+        <Routes>
+          <Route path="/" element={<Overview />} />
+          <Route path="/landscape" element={<Storyteller />} />
+          <Route path="/resources" element={<Content />} />
+          <Route path="/join" element={<JoinUs />} />
+        </Routes>
       </main>
 
-      <footer className="footer">
-        <p>
-          StellarPH Intern Onboarding Deck &middot; June 2026 &middot;{' '}
-          <a href="https://stellarph.io" rel="noopener noreferrer">stellarph.io</a>
-        </p>
-      </footer>
-    </>
+      <Footer />
+    </BrowserRouter>
   )
 }

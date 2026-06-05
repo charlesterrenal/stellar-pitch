@@ -8,9 +8,9 @@ const stats = [
 ]
 
 const pillars = [
-  { icon: '01', title: 'Inspire',    body: 'Empower aspiring founders to take the leap.' },
-  { icon: '02', title: 'Educate',    body: 'Build practical skills from idea to scale.' },
-  { icon: '03', title: 'Facilitate', body: 'Connect people, resources, and capital.' },
+  { title: 'Navigate', body: 'Discover VCs, accelerators, and government grants.' },
+  { title: 'Accelerate', body: 'Build practical skills from idea to scale with our playbooks.' },
+  { title: 'Connect', body: 'Join a decentralized network of founders across the Philippines.' },
 ]
 
 export function Overview() {
@@ -21,17 +21,16 @@ export function Overview() {
       <div className="fade-in">
         <div className="hero-tag">
           <div className="pulse" aria-hidden="true" />
-          StellarPH Introduction
+          Welcome, Founder
         </div>
 
         <h1 className="hero-title">
-          Inspiring the next generation of<br />
-          <span className="gradient-text">Filipino founders</span>
+          Navigate the Philippine<br />
+          <span className="gradient-text">Startup Ecosystem</span>
         </h1>
 
         <p className="hero-sub">
-          A Cebu-based startup enabler removing barriers through
-          mentorship, education, and community.
+          Your ideas are limitless. We are your launchpad. Explore the landscape, find resources, and connect with the right people to scale your startup.
         </p>
       </div>
 
@@ -49,7 +48,6 @@ export function Overview() {
         <div className="pillars-grid">
           {pillars.map((p) => (
             <div className="card" key={p.title}>
-              <span className="pillar-icon" aria-hidden="true">{p.icon}</span>
               <div className="pillar-title">{p.title}</div>
               <p className="pillar-body">{p.body}</p>
             </div>

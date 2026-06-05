@@ -8,6 +8,7 @@ export interface EcosystemEntity {
   programs: string
   lifecycleStage: string
   logo?: string
+  milestoneDate?: string
 }
 
 export const ecosystemDetails: Record<string, EcosystemEntity> = {

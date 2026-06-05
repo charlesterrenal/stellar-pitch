@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useFadeIn } from '../hooks/useFadeIn'
 import { Modal } from '../components/Modal'
 import { ecosystemDetails } from '../data/ecosystemDetails'
 import type { EcosystemEntity } from '../data/ecosystemDetails'
+import { fetchEcosystemData } from '../services/airtable'
 
 type TagVariant = 'stellar' | 'gov' | 'vc' | undefined
 
@@ -104,13 +105,49 @@ export function Ecosystem() {
   const ref = useFadeIn()
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedEntity, setSelectedEntity] = useState<EcosystemEntity | null>(null)
+  const [airtableData, setAirtableData] = useState<Record<string, EcosystemEntity>>({})
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+      const data = await fetchEcosystemData()
+      setAirtableData(data)
+      setIsLoading(false)
+    }
+    loadData()
+  }, [])
+
+  // Dynamically calculate the display groups by merging hardcoded ones with Airtable data
+  const displayGroups = useMemo(() => {
+    if (Object.keys(airtableData).length === 0) return groups;
+
+    const newGroups = groups.map(g => ({ ...g, tags: [...g.tags] }));
+
+    Object.values(airtableData).forEach(entity => {
+      const cat = entity.category || 'Other';
+      let group = newGroups.find(g => g.title === cat);
+      
+      if (!group) {
+        group = { title: cat, tags: [] };
+        newGroups.push(group);
+      }
+
+      if (!group.tags.some(t => t.label === entity.name)) {
+        group.tags.push({ label: entity.name });
+      }
+    });
+
+    return newGroups;
+  }, [airtableData]);
 
   const handleCategoryClick = (title: string) => {
     setSelectedCategory(selectedCategory === title ? null : title)
   }
 
   const handleTagClick = (label: string) => {
-    const details = ecosystemDetails[label]
+    // Priority: Airtable Data > Hardcoded details > Fallback
+    const details = airtableData[label] || ecosystemDetails[label]
     if (details) {
       setSelectedEntity(details)
     } else {
@@ -132,14 +169,17 @@ export function Ecosystem() {
     <section className="section" id="ecosystem" ref={ref}>
       <div className="fade-in">
         <div className="eyebrow">Ecosystem Map</div>
-        <h2 className="sec-title">The Philippine startup landscape</h2>
+        <h2 className="sec-title">
+          The Philippine startup landscape
+          {isLoading && <span style={{ fontSize: '0.5em', marginLeft: '12px', opacity: 0.5 }}>Loading live data...</span>}
+        </h2>
         <p className="sec-sub">
           Key players shaping the PH startup ecosystem &mdash; click on a category to filter, or a company to view details.
         </p>
       </div>
 
       <div className="eco-grid fade-in">
-        {groups.map((g) => {
+        {displayGroups.map((g) => {
           const isFaded = selectedCategory && selectedCategory !== g.title
           
           return (
